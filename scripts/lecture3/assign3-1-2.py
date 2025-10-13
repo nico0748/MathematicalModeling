@@ -14,13 +14,8 @@ A[h-1,h-1] = 1
 print(A)
 
 b = np.zeros((h, 1))
-for i in range(h-1):
-    if i == 0:
-        b[i] = 10
-    elif i == h-2:
-        b[i+1] = 0
-    else:
-        b[i+1] = 0
+b[0] = 10      # 境界条件: u(0) = 10
+b[h-1] = 0     # 境界条件: u(1) = 0
 #print(b)
 
 # 連立方程式 Au = b を解く
