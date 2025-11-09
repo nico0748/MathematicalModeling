@@ -1,0 +1,72 @@
+\documentclass[uplatex,dvipdfmx]{jsarticle}
+
+\usepackage[uplatex,deluxe]{otf} % UTF
+\usepackage[noalphabet]{pxchfon} % must be after otf package
+\usepackage{stix2} %欧文＆数式フォント
+\usepackage[fleqn,tbtags]{mathtools} % 数式関連 (w/ amsmath)
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{hira-stix} % ヒラギノフォント＆STIX2 フォント代替定義（Warning回避）
+\usepackage{titlesec} % セクションのフォント変更用
+\usepackage{listings} 
+\usepackage{url}
+\lstset{
+basicstyle={\ttfamily}, 
+identifierstyle={\small}, 
+commentstyle={\smallitshape}, 
+keywordstyle={\small\bfseries},  
+ndkeywordstyle={\small},  
+stringstyle={\small\ttfamily},  
+frame={tb},  breaklines=true,  
+columns=[l]{fullflexible},  
+numbers=left,  xrightmargin=0zw,  xleftmargin=3zw,  
+numberstyle={\scriptsize},  stepnumber=1, 
+numbersep=1zw,  lineskip=-0.5ex
+}
+
+\titleformat*{\section}{\rmfamily\mcfamily\Large} % \sectionのフォントを明朝体に設定
+\titleformat*{\subsection}{\rmfamily\mcfamily\Large} 
+\titleformat*{\subsubsection}{\rmfamily\mcfamily\Large} 
+
+\begin{document}
+\title{数理モデリング 第6回レポート課題}
+\author{学籍番号: 24G1122\\氏名: 細澤悠真}
+\date{\today}
+\maketitle
+
+\section{課題4}
+常微分方程式ソルバーを用いて、解いた結果について考察せよ\par
+本課題では, SciPy の常微分方程式ソルバー solve-ivp を用いてローレンツ方程式を5種類の手法（RK23, RK45, LSODA, BDF, Radau）で数値的に解いた。いずれの手法においても,時間発展の初期段階では3変数 x(t), y(t), z(t) の挙動はほぼ一致し,典型的なローレンツ・アトラクタに対応する軌道が得られた。したがって, 設定した許容誤差（rtol=1e-6, atol=1e-9）の範囲内では, 5手法はいずれもローレンツ方程式の短時間挙動を十分に再現できるといえる。
+
+一方で, 長時間積分を行うと手法ごとの解が徐々に乖離する様子が観察された。これはローレンツ方程式が決定論的カオスを示す非線形系であり, 初期値鋭敏性をもつためである。カオス系では, 数値積分にともなうわずかな丸め誤差や時間刻みの違いが指数的に増幅される。そのため, 今回のように異なる積分アルゴリズムを用いた場合, 最終的な軌道が一致しないのはむしろ自然な結果である。したがって, 「長時間で解が一致しない」こと自体をもって手法の不適切さを論じることはできない。
+
+各手法の特徴としては,RK45 は実装が簡単で安定性と計算量のバランスがよく,「とりあえず解く」には最も扱いやすかった。RK23 は低次手法であるため同じ精度を得るにはより細かいステップが必要になる傾向があった。LSODA は方程式の剛性を自動判定して手法を切り替えるため,ユーザが方程式の性質をあらかじめ深く理解していなくても安定した積分が行えた。BDF および Radau は剛性方程式向けの暗黙的手法であり,1ステップあたりの計算コストは高いものの, 非線形項が強くなる領域でも安定な計算が可能であった。以上より, ローレンツ方程式のようなカオス系を数値的に扱う場合, 短時間挙動の再現であれば明示的Runge–Kutta法で十分であり, 長時間の安定性や方程式の性質がはっきりしない場合にはLSODAのような自動切替型ソルバーが有効であるといえる。
+
+\section{課題5}
+課題５：決定論的カオスとは何か調べ、ローレンツ方程式との関係を記述せよ\par
+決定論的カオスは明確な物理法則や数式に従っているにもかかわらず、初期条件のわずかな違いが時間とともに大きな差を生む現象である。
+ローレンツ方程式はこの決定論的カオスの代表的な例であり、特に気象学における非線形現象をモデル化する際に重要な役割を果たしている。
+ローレンツ方程式は3つの常微分方程式から構成されており、これらの方程式は大気の対流を簡略化したモデルである。
+気象におけるローレンツ方程式は以下のような形を取る。
+\begin{equation}
+\frac{dx}{dt} = \sigma (y - x)
+\end{equation}
+\begin{equation}
+\frac{dy}{dt} = x(\rho - z) - y
+\end{equation}
+\begin{equation}
+\frac{dz}{dt} = xy - \beta z
+\end{equation}
+ここで、$x$、$y$、$z$はシステムの状態変数、$\sigma$、$\rho$、$\beta$はシステムのパラメータである。これらの方程式は非線形であり、
+特に、特定のパラメータ（たとえば $\sigma$ = 10, $\rho$ = 28, $\beta$ = 8/3）のとき、
+ローレンツ方程式の解はローレンツ・アトラクタ（Lorenz attractor）と呼ばれる蝶の羽のような形を描き出す。
+この軌道を描く際には、以下のような性質を持ち合わせる。
+\begin{itemize}
+\item 決定論的な方程式に従うにも関わらず、二度と同じ軌道を通らない  
+\item 初期値を少し変えると、軌道が全く異なる（初期値鋭敏性）  
+\item 長期的にはどの軌道も「蝶型アトラクタ」に引き寄せられる（アトラクタ構造）  
+\end{itemize}
+これらの性質により、ローレンツ方程式は決定論的カオスの典型例として関係を持っている。
+\end{document}
+
+% 
