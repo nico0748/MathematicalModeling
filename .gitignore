@@ -33,3 +33,8 @@ Thumbs.db
 # その他
 *.log
 .env
+
+*.tex
+*.aux
+*.dvi
+*.log
